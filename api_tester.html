@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Testador de APIs - Academia Smart</title>
+    <!-- Carrega o Tailwind CSS para estilização -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: "Inter", sans-serif;
+            background-color: #f0f4f8;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start; /* Alinha ao topo para não ficar muito centralizado verticalmente */
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 600px;
+            margin-top: 50px;
+        }
+        h1, h2 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        form {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #e0e7eb;
+            border-radius: 10px;
+            background-color: #fdfdfd;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #34495e;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 15px;
+            border: 1px solid #d1d8df;
+            border-radius: 8px;
+            box-sizing: border-box;
+            font-size: 1rem;
+            color: #4a5568;
+        }
+        button {
+            width: 100%;
+            padding: 12px 20px;
+            background-color: #3b82f6; /* Tailwind blue-500 */
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            font-weight: 700;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            box-shadow: 0 4px 10px rgba(59, 130, 246, 0.3);
+        }
+        button:hover {
+            background-color: #2563eb; /* Tailwind blue-600 */
+            transform: translateY(-2px);
+        }
+        button:active {
+            background-color: #1d4ed8; /* Tailwind blue-700 */
+            transform: translateY(0);
+        }
+        .response-box {
+            background-color: #e2e8f0;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            word-break: break-all;
+            color: #2d3748;
+            max-height: 200px;
+            overflow-y: auto;
+            border: 1px solid #cbd5e0;
+        }
+        .response-box.success {
+            background-color: #d1fae5; /* Tailwind green-100 */
+            border-color: #34d399; /* Tailwind green-400 */
+            color: #065f46; /* Tailwind green-800 */
+        }
+        .response-box.error {
+            background-color: #fee2e2; /* Tailwind red-100 */
+            border-color: #ef4444; /* Tailwind red-500 */
+            color: #991b1b; /* Tailwind red-800 */
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="text-3xl font-bold mb-6">Testador de APIs da Academia Smart</h1>
+        <p class="text-center text-gray-600 mb-8">Certifique-se de que seu servidor Next.js está rodando (<code>npm run dev</code>) na porta 4000 ou 3000.</p>
+
+        <!-- Formulário para Check-in -->
+        <form id="checkinForm" class="mb-8">
+            <h2 class="text-2xl font-semibold mb-4">Testar Check-in de Cliente</h2>
+            <label for="checkin_cliente_id" class="block text-gray-700 text-sm font-bold mb-2">
+                ID do Cliente (UUID):
+            </label>
+            <input type="text" id="checkin_cliente_id" name="cliente_id" placeholder="Ex: a1a1a1a1-a1a1-4a1a-a1a1-a1a1a1a1a1a1" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
+            <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                Realizar Check-in
+            </button>
+            <div id="checkinResponse" class="response-box hidden"></div>
+        </form>
+
+        <!-- Formulário para Enviar Mensagem -->
+        <form id="mensagemForm">
+            <h2 class="text-2xl font-semibold mb-4">Testar Envio de Mensagem (IA + WhatsApp)</h2>
+            <label for="mensagem_cliente_id" class="block text-gray-700 text-sm font-bold mb-2">
+                ID do Cliente (UUID):
+            </label>
+            <input type="text" id="mensagem_cliente_id" name="cliente_id" placeholder="Ex: b2b2b2b2-b2b2-4b2b-b2b2-b2b2b2b2b2b2" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
+            <input type="hidden" name="tipoMensagem" value="motivacional">
+            <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                Enviar Mensagem Motivacional
+            </button>
+            <div id="mensagemResponse" class="response-box hidden"></div>
+        </form>
+    </div>
+
+    <script>
+        // Função para exibir a resposta da API
+        function displayResponse(elementId, data, isError = false) {
+            const responseBox = document.getElementById(elementId);
+            responseBox.classList.remove('hidden', 'success', 'error');
+            responseBox.classList.add(isError ? 'error' : 'success');
+            responseBox.textContent = JSON.stringify(data, null, 2);
+        }
+
+        // URL base do seu servidor Next.js (ajuste se estiver usando a porta 3000)
+        const BASE_URL = 'http://localhost:4000'; // OU 'http://localhost:3000' se você não mudou a porta
+
+        // Lógica para o formulário de Check-in
+        document.getElementById('checkinForm').addEventListener('submit', async (event) => {
+            event.preventDefault(); // Previne o recarregamento da página
+
+            const clienteId = document.getElementById('checkin_cliente_id').value;
+            const responseDiv = document.getElementById('checkinResponse');
+            responseDiv.textContent = 'Enviando...';
+            responseDiv.classList.remove('hidden', 'success', 'error');
+
+            try {
+                const response = await fetch(`${BASE_URL}/api/checkin`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ cliente_id: clienteId }),
+                });
+
+                const data = await response.json();
+                if (response.ok) {
+                    displayResponse('checkinResponse', data, false);
+                } else {
+                    displayResponse('checkinResponse', data, true);
+                }
+            } catch (error) {
+                console.error('Erro na requisição de check-in:', error);
+                displayResponse('checkinResponse', { error: 'Erro de rede ou servidor.', details: error.message }, true);
+            }
+        });
+
+        // Lógica para o formulário de Mensagem
+        document.getElementById('mensagemForm').addEventListener('submit', async (event) => {
+            event.preventDefault(); // Previne o recarregamento da página
+
+            const clienteId = document.getElementById('mensagem_cliente_id').value;
+            const tipoMensagem = event.target.elements.tipoMensagem.value; // Pega o valor do input hidden
+            const responseDiv = document.getElementById('mensagemResponse');
+            responseDiv.textContent = 'Enviando...';
+            responseDiv.classList.remove('hidden', 'success', 'error');
+
+
+            try {
+                const response = await fetch(`${BASE_URL}/api/mensagem`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ cliente_id: clienteId, tipoMensagem: tipoMensagem }),
+                });
+
+                const data = await response.json();
+                if (response.ok) {
+                    displayResponse('mensagemResponse', data, false);
+                } else {
+                    displayResponse('mensagemResponse', data, true);
+                }
+            } catch (error) {
+                console.error('Erro na requisição de mensagem:', error);
+                displayResponse('mensagemResponse', { error: 'Erro de rede ou servidor.', details: error.message }, true);
+            }
+        });
+    </script>
+</body>
+</html>
+
