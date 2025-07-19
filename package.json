@@ -1,16 +1,23 @@
 {
-  "name": "projeto-academia",
-  "version": "0.1.0",
+  "name": "academia-smart",
+  "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev -p 4000",
     "build": "next build",
-    "start": "next start",
+    "start": "next start -p 4000",
     "lint": "next lint"
   },
   "dependencies": {
-    "react": "19.1.0",
-    "react-dom": "19.1.0",
-    "next": "15.4.1"
-  }
+    "@supabase/supabase-js": "^2.52.0",
+    "next": "^14.2.3",
+    "openai": "^4.0.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "eslint": "^8",
+    "eslint-config-next": "14.2.3"
+  },
+  "description": "Software para academia com automações inteligentes e IA."
 }
